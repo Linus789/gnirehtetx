@@ -10,6 +10,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 
+import androidx.core.app.NotificationCompat;
+
 /**
  * Manage the notification necessary for the foreground service (mandatory since Android O).
  */
@@ -26,7 +28,7 @@ public class Notifier {
     }
 
     private Notification createNotification(boolean failure) {
-        Notification.Builder notificationBuilder = createNotificationBuilder();
+        NotificationCompat.Builder notificationBuilder = createNotificationBuilder();
         notificationBuilder.setContentTitle(context.getString(R.string.app_name));
         if (failure) {
             notificationBuilder.setContentText(context.getString(R.string.relay_disconnected));
@@ -35,16 +37,13 @@ public class Notifier {
             notificationBuilder.setContentText(context.getString(R.string.relay_connected));
             notificationBuilder.setSmallIcon(R.drawable.ic_usb_24dp);
         }
+        notificationBuilder.setOngoing(true);
         notificationBuilder.addAction(createStopAction());
         return notificationBuilder.build();
     }
 
-    @SuppressWarnings("deprecation")
-    private Notification.Builder createNotificationBuilder() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            return new Notification.Builder(context, CHANNEL_ID);
-        }
-        return new Notification.Builder(context);
+    private NotificationCompat.Builder createNotificationBuilder() {
+        return new NotificationCompat.Builder(context, CHANNEL_ID);
     }
 
     @TargetApi(26)
@@ -82,14 +81,14 @@ public class Notifier {
         }
     }
 
-    private Notification.Action createStopAction() {
+    private NotificationCompat.Action createStopAction() {
         Intent stopIntent = GnirehtetService.createStopIntent(context);
-        PendingIntent stopPendingIntent = PendingIntent.getService(context, 0, stopIntent, PendingIntent.FLAG_ONE_SHOT);
-        // the non-deprecated constructor is not available in API 21
-        @SuppressWarnings("deprecation")
-        Notification.Action.Builder actionBuilder = new Notification.Action.Builder(R.drawable.ic_close_24dp, context.getString(R.string.stop_vpn),
-                stopPendingIntent);
-        return actionBuilder.build();
+        int flags = PendingIntent.FLAG_ONE_SHOT;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            flags |= PendingIntent.FLAG_IMMUTABLE;
+        }
+        PendingIntent stopPendingIntent = PendingIntent.getService(context, 0, stopIntent, flags);
+        return new NotificationCompat.Action(R.drawable.ic_close_24dp, context.getString(R.string.stop_vpn), stopPendingIntent);
     }
 
     private NotificationManager getNotificationManager() {

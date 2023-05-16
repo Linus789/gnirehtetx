@@ -26,15 +26,24 @@ public class VpnConfiguration implements Parcelable {
 
     private final InetAddress[] dnsServers;
     private final CIDR[] routes;
+    private final String[] blockedPackageNames;
+    private boolean stopOnDisconnect;
+    private final boolean startedByServer;
 
     public VpnConfiguration() {
         this.dnsServers = new InetAddress[0];
         this.routes = new CIDR[0];
+        this.blockedPackageNames = new String[0];
+        this.stopOnDisconnect = false;
+        this.startedByServer = true;
     }
 
-    public VpnConfiguration(InetAddress[] dnsServers, CIDR[] routes) {
+    public VpnConfiguration(InetAddress[] dnsServers, CIDR[] routes, String[] blockedPackageNames, boolean stopOnDisconnect, boolean startedByServer) {
         this.dnsServers = dnsServers;
         this.routes = routes;
+        this.blockedPackageNames = blockedPackageNames;
+        this.stopOnDisconnect = stopOnDisconnect;
+        this.startedByServer = startedByServer;
     }
 
     private VpnConfiguration(Parcel source) {
@@ -48,6 +57,9 @@ public class VpnConfiguration implements Parcelable {
             throw new AssertionError("Invalid address", e);
         }
         routes = source.createTypedArray(CIDR.CREATOR);
+        blockedPackageNames = source.createStringArray();
+        stopOnDisconnect = source.readByte() == 1;
+        startedByServer = source.readByte() == 1;
     }
 
     public InetAddress[] getDnsServers() {
@@ -58,6 +70,22 @@ public class VpnConfiguration implements Parcelable {
         return routes;
     }
 
+    public String[] getBlockedPackageNames() {
+        return blockedPackageNames;
+    }
+
+    public boolean stopOnDisconnect() {
+        return stopOnDisconnect;
+    }
+
+    public void setStopOnDisconnect(boolean stopOnDisconnect) {
+        this.stopOnDisconnect = stopOnDisconnect;
+    }
+
+    public boolean isStartedByServer() {
+        return startedByServer;
+    }
+
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(dnsServers.length);
@@ -65,6 +93,9 @@ public class VpnConfiguration implements Parcelable {
             dest.writeByteArray(addr.getAddress());
         }
         dest.writeTypedArray(routes, 0);
+        dest.writeStringArray(blockedPackageNames);
+        dest.writeByte(stopOnDisconnect ? (byte) 1 : (byte) 0);
+        dest.writeByte(startedByServer ? (byte) 1 : (byte) 0);
     }
 
     @Override

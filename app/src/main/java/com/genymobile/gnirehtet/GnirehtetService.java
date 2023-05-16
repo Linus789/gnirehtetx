@@ -18,6 +18,7 @@ package com.genymobile.gnirehtet;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.LinkAddress;
 import android.net.LinkProperties;
@@ -25,13 +26,21 @@ import android.net.Network;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
+import android.widget.Toast;
+
+import com.genymobile.gnirehtet.settings.PreferencesManagerKt;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
+
+import kotlinx.coroutines.flow.MutableStateFlow;
+import kotlinx.coroutines.flow.StateFlow;
+import kotlinx.coroutines.flow.StateFlowKt;
 
 public class GnirehtetService extends VpnService {
 
@@ -48,10 +57,13 @@ public class GnirehtetService extends VpnService {
     private static final int MTU = 0x4000;
 
     private final Notifier notifier = new Notifier(this);
-    private final Handler handler = new RelayTunnelConnectionStateHandler(this);
+    private final RelayTunnelConnectionStateHandler handler = new RelayTunnelConnectionStateHandler(this);
 
-    private ParcelFileDescriptor vpnInterface = null;
+    private ParcelFileDescriptor vpnInterface;
     private Forwarder forwarder;
+    private static final MutableStateFlow<Boolean> isRunning = StateFlowKt.MutableStateFlow(false);
+    private static final MutableStateFlow<Boolean> isConnected = StateFlowKt.MutableStateFlow(false);
+    private static VpnConfiguration lastConfiguration;
 
     public static void start(Context context, VpnConfiguration config) {
         Intent intent = new Intent(context, GnirehtetService.class);
@@ -83,13 +95,14 @@ public class GnirehtetService extends VpnService {
         String action = intent.getAction();
         Log.d(TAG, "Received request " + action);
         if (ACTION_START_VPN.equals(action)) {
-            if (isRunning()) {
+            if (isRunning().getValue()) {
                 Log.d(TAG, "VPN already running, ignore START request");
             } else {
                 VpnConfiguration config = intent.getParcelableExtra(EXTRA_VPN_CONFIGURATION);
                 if (config == null) {
                     config = new VpnConfiguration();
                 }
+                lastConfiguration = config;
                 startVpn(config);
             }
         } else if (ACTION_CLOSE_VPN.equals(action)) {
@@ -98,14 +111,24 @@ public class GnirehtetService extends VpnService {
         return START_NOT_STICKY;
     }
 
-    private boolean isRunning() {
-        return vpnInterface != null;
+    public static StateFlow<Boolean> isRunning() {
+        return isRunning;
+    }
+
+    public static StateFlow<Boolean> isConnected() {
+        return isConnected;
+    }
+
+    public static VpnConfiguration getLastConfiguration() {
+        return lastConfiguration;
     }
 
     private void startVpn(VpnConfiguration config) {
-        notifier.start();
         if (setupVpn(config)) {
+            notifier.start();
             startForwarding();
+        } else {
+            Toast.makeText(this, "Failed to start Gnirehtet", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -135,12 +158,19 @@ public class GnirehtetService extends VpnService {
             }
         }
 
+        for (String blockedApp : config.getBlockedPackageNames()) {
+            try {
+                builder.addDisallowedApplication(blockedApp);
+            } catch (PackageManager.NameNotFoundException ignored) {}
+        }
+
         // non-blocking by default, but FileChannel is not selectable, that's stupid!
         // so switch to synchronous I/O to avoid polling
         builder.setBlocking(true);
         builder.setMtu(MTU);
 
         vpnInterface = builder.establish();
+        isRunning.setValue(vpnInterface != null);
         if (vpnInterface == null) {
             Log.w(TAG, "VPN starting failed, please retry");
             // establish() may return null if the application is not prepared or is revoked
@@ -185,7 +215,7 @@ public class GnirehtetService extends VpnService {
     }
 
     private void close() {
-        if (!isRunning()) {
+        if (!isRunning().getValue()) {
             // already closed
             return;
         }
@@ -197,23 +227,25 @@ public class GnirehtetService extends VpnService {
             forwarder = null;
             vpnInterface.close();
             vpnInterface = null;
+            isRunning.setValue(false);
+            isConnected.setValue(false);
         } catch (IOException e) {
             Log.w(TAG, "Cannot close VPN file descriptor", e);
         }
     }
-
 
     private static final class RelayTunnelConnectionStateHandler extends Handler {
 
         private final GnirehtetService vpnService;
 
         private RelayTunnelConnectionStateHandler(GnirehtetService vpnService) {
+            super(Looper.myLooper());
             this.vpnService = vpnService;
         }
 
         @Override
         public void handleMessage(Message message) {
-            if (!vpnService.isRunning()) {
+            if (!isRunning().getValue()) {
                 // if the VPN is not running anymore, ignore obsolete events
                 return;
             }
@@ -221,13 +253,39 @@ public class GnirehtetService extends VpnService {
                 case RelayTunnelListener.MSG_RELAY_TUNNEL_CONNECTED:
                     Log.d(TAG, "Relay tunnel connected");
                     vpnService.notifier.setFailure(false);
+
+                    if (!isConnected.getValue() && PreferencesManagerKt.getPreferences().getGnirehtetShowToastOnConnect().getValue()) {
+                        Toast.makeText(vpnService, "Gnirehtet connection established", Toast.LENGTH_SHORT).show();
+                    }
+
+                    isConnected.setValue(true);
                     break;
                 case RelayTunnelListener.MSG_RELAY_TUNNEL_DISCONNECTED:
                     Log.d(TAG, "Relay tunnel disconnected");
-                    vpnService.notifier.setFailure(true);
+                    if (lastConfiguration.stopOnDisconnect()) {
+                        stop(vpnService);
+                    } else {
+                        vpnService.notifier.setFailure(true);
+                    }
+
+                    if (isConnected.getValue() && PreferencesManagerKt.getPreferences().getGnirehtetShowToastOnDisconnect().getValue()) {
+                        String toastText;
+
+                        if (lastConfiguration.stopOnDisconnect()) {
+                            toastText = "Gnirehtet stopped due to no connection";
+                        } else {
+                            toastText = "Gnirehtet connection failed";
+                        }
+
+                        Toast.makeText(vpnService, toastText, Toast.LENGTH_SHORT).show();
+                    }
+
+                    isConnected.setValue(false);
                     break;
                 default:
             }
         }
+
     }
+
 }

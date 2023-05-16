@@ -54,28 +54,22 @@ public class Forwarder {
     }
 
     public void forward() {
-        deviceToTunnelFuture = EXECUTOR_SERVICE.submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    forwardDeviceToTunnel(tunnel);
-                } catch (InterruptedIOException e) {
-                    Log.d(TAG, "Device to tunnel interrupted");
-                } catch (IOException e) {
-                    Log.e(TAG, "Device to tunnel exception", e);
-                }
+        deviceToTunnelFuture = EXECUTOR_SERVICE.submit(() -> {
+            try {
+                forwardDeviceToTunnel(tunnel);
+            } catch (InterruptedIOException e) {
+                Log.d(TAG, "Device to tunnel interrupted");
+            } catch (IOException e) {
+                Log.e(TAG, "Device to tunnel exception", e);
             }
         });
-        tunnelToDeviceFuture = EXECUTOR_SERVICE.submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    forwardTunnelToDevice(tunnel);
-                } catch (InterruptedIOException e) {
-                    Log.d(TAG, "Device to tunnel interrupted");
-                } catch (IOException e) {
-                    Log.e(TAG, "Tunnel to device exception", e);
-                }
+        tunnelToDeviceFuture = EXECUTOR_SERVICE.submit(() -> {
+            try {
+                forwardTunnelToDevice(tunnel);
+            } catch (InterruptedIOException e) {
+                Log.d(TAG, "Device to tunnel interrupted");
+            } catch (IOException e) {
+                Log.e(TAG, "Tunnel to device exception", e);
             }
         });
     }
@@ -90,26 +84,27 @@ public class Forwarder {
     @SuppressWarnings("checkstyle:MagicNumber")
     private void forwardDeviceToTunnel(Tunnel tunnel) throws IOException {
         Log.d(TAG, "Device to tunnel forwarding started");
-        FileInputStream vpnInput = new FileInputStream(vpnFileDescriptor);
-        byte[] buffer = new byte[BUFSIZE];
-        while (true) {
-            // blocking read
-            int r = vpnInput.read(buffer);
-            if (r == -1) {
-                Log.d(TAG, "VPN closed");
-                break;
-            }
-            if (r > 0) {
-                int version = buffer[0] >> 4;
-                if (version == 4) {
-                    // blocking send
-                    tunnel.send(buffer, r);
-                } else {
-                    // see <https://github.com/Genymobile/gnirehtet/issues/69>
-                    Log.w(TAG, "Unexpected packet IP version: " + version);
+        try (FileInputStream vpnInput = new FileInputStream(vpnFileDescriptor)) {
+            byte[] buffer = new byte[BUFSIZE];
+            while (true) {
+                // blocking read
+                int r = vpnInput.read(buffer);
+                if (r == -1) {
+                    Log.d(TAG, "VPN closed");
+                    break;
                 }
-            } else {
-                Log.d(TAG, "Empty read");
+                if (r > 0) {
+                    int version = buffer[0] >> 4;
+                    if (version == 4) {
+                        // blocking send
+                        tunnel.send(buffer, r);
+                    } else {
+                        // see <https://github.com/Genymobile/gnirehtet/issues/69>
+                        Log.w(TAG, "Unexpected packet IP version: " + version);
+                    }
+                } else {
+                    Log.d(TAG, "Empty read");
+                }
             }
         }
         Log.d(TAG, "Device to tunnel forwarding stopped");
@@ -149,17 +144,13 @@ public class Forwarder {
      */
     private void wakeUpReadWorkaround() {
         // network actions may not be called from the main thread
-        EXECUTOR_SERVICE.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    DatagramSocket socket = new DatagramSocket();
-                    InetAddress dummyAddr = InetAddress.getByAddress(DUMMY_ADDRESS);
-                    DatagramPacket packet = new DatagramPacket(new byte[0], 0, dummyAddr, DUMMY_PORT);
-                    socket.send(packet);
-                } catch (IOException e) {
-                    // ignore
-                }
+        EXECUTOR_SERVICE.execute(() -> {
+            try (DatagramSocket socket = new DatagramSocket()) {
+                InetAddress dummyAddr = InetAddress.getByAddress(DUMMY_ADDRESS);
+                DatagramPacket packet = new DatagramPacket(new byte[0], 0, dummyAddr, DUMMY_PORT);
+                socket.send(packet);
+            } catch (IOException e) {
+                // ignore
             }
         });
     }

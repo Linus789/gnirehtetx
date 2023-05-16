@@ -18,7 +18,7 @@ package com.genymobile.gnirehtet;
 
 public class InvalidCIDRException extends Exception {
 
-    private String cidr;
+    private final String cidr;
 
     private static String createMessage(String cidr) {
         return "Invalid CIDR:" + cidr;

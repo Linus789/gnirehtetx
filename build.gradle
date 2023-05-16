@@ -1,45 +1,15 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-
-ext {
-    compileSdkVersion = 28
-    buildToolsVersion = "28.0.3"
-}
-
 buildscript {
-    repositories {
-        jcenter()
-        google()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.0'
-
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
+    ext {
+        kotlin_version = '1.8.21'
+        compose_version = '1.4.3'
+        richtext_version = '0.16.0'
+        aboutlibs_version = '10.6.3'
     }
 }
 
-allprojects {
-    repositories {
-        jcenter()
-        google()
-    }
+plugins {
+    id 'com.android.application' version '8.0.1' apply false
+    id 'com.android.library' version '8.0.1' apply false
+    id 'org.jetbrains.kotlin.android' version "$kotlin_version" apply false
+    id 'com.mikepenz.aboutlibraries.plugin' version "$aboutlibs_version" apply false
 }
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
-}
-
-task debugJava(dependsOn: [':app:assembleDebug', ':relay-java:assembleDebug'])
-task releaseJava(dependsOn: [':app:assembleRelease', ':relay-java:assembleRelease'])
-
-task debugRust(dependsOn: [':app:assembleDebug', ':relay-rust:debug'])
-task releaseRust(dependsOn: [':app:assembleRelease', ':relay-rust:release'])
-
-task releaseRustWindows(dependsOn: [':app:assembleRelease', 'relay-rust:releaseCrossToWindows'])
-
-task debugAll(dependsOn: ['debugJava', 'debugRust'])
-task releaseAll(dependsOn: ['releaseJava', 'releaseRust'])
-
-task checkJava(dependsOn: [':app:check', ':relay-java:check'])
-task checkRust(dependsOn: ['app:check', ':relay-rust:check'])
-task checkAll(dependsOn: ['checkJava', 'checkRust'])

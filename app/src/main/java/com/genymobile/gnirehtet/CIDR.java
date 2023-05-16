@@ -20,13 +20,15 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 public class CIDR implements Parcelable {
 
-    private InetAddress address;
-    private int prefixLength;
+    private final InetAddress address;
+    private final int prefixLength;
 
     public CIDR(InetAddress address, int prefixLength) {
         this.address = address;
@@ -74,6 +76,7 @@ public class CIDR implements Parcelable {
         return prefixLength;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return address.getHostAddress() + "/" + prefixLength;

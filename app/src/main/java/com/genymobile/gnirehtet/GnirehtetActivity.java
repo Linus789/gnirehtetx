@@ -6,6 +6,9 @@ import android.net.VpnService;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.genymobile.gnirehtet.domain.Gnirehtet;
+import com.genymobile.gnirehtet.utils.ContextUtils;
+
 /**
  * This (invisible) activity receives the {@link #ACTION_GNIREHTET_START START} and
  * {@link #ACTION_GNIREHTET_STOP} actions from the command line.
@@ -23,6 +26,8 @@ public class GnirehtetActivity extends Activity {
 
     public static final String EXTRA_DNS_SERVERS = "dnsServers";
     public static final String EXTRA_ROUTES = "routes";
+    public static final String EXTRA_BLOCKED_PACKAGE_NAMES = "blockedPackageNames";
+    public static final String EXTRA_STOP_ON_DISCONNECT = "stopOnDisconnect";
 
     private static final int VPN_REQUEST_CODE = 0;
 
@@ -31,6 +36,7 @@ public class GnirehtetActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ContextUtils.INSTANCE.initialize(this);
         handleIntent(getIntent());
     }
 
@@ -59,7 +65,12 @@ public class GnirehtetActivity extends Activity {
         if (routes == null) {
             routes = new String[0];
         }
-        return new VpnConfiguration(Net.toInetAddresses(dnsServers), Net.toCIDRs(routes));
+        String[] blockedPackageNames = intent.getStringArrayExtra(EXTRA_BLOCKED_PACKAGE_NAMES);
+        if (blockedPackageNames == null) {
+            blockedPackageNames = new String[0];
+        }
+        boolean stopOnDisconnect = intent.getBooleanExtra(EXTRA_STOP_ON_DISCONNECT, false);
+        return Gnirehtet.INSTANCE.createConfig(Net.toInetAddresses(dnsServers), Net.toCIDRs(routes), blockedPackageNames, stopOnDisconnect, true);
     }
 
     private boolean startGnirehtet(VpnConfiguration config) {
