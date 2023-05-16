@@ -1,0 +1,15 @@
+{
+  "uniqueId": "com.genymobile:gnirehtet",
+  "developers": [
+    {
+      "name": "rom1v",
+      "organisationUrl": "https://github.com/rom1v"
+    }
+  ],
+  "description": "Gnirehtet provides reverse tethering for Android",
+  "name": "Gnirehtet",
+  "website": "https://github.com/Genymobile/gnirehtet",
+  "licenses": [
+    "gnirehtet_license"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "uniqueId": "com.junkfood:seal",
+  "developers": [
+    {
+      "name": "JunkFood02",
+      "organisationUrl": "https://github.com/JunkFood02"
+    }
+  ],
+  "funding": [
+    {
+      "platform": "GITHUB",
+      "url": "https://github.com/JunkFood02"
+    }
+  ],
+  "description": "Video/Audio Downloader for Android, based on yt-dlp, designed with Material You",
+  "name": "Seal",
+  "website": "https://github.com/JunkFood02/Seal",
+  "licenses": [
+    "seal_license"
+  ]
+}

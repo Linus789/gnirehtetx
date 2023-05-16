@@ -1,0 +1,116 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'com.mikepenz.aboutlibraries.plugin'
+}
+
+android {
+    namespace 'com.genymobile.gnirehtet'
+    buildToolsVersion '33.0.1'
+    compileSdk 33
+
+    defaultConfig {
+        applicationId "com.genymobile.gnirehtet"
+        minSdk 21
+        targetSdk 33
+        versionCode 8
+        versionName "0.1"
+        resValue "string", "app_name", "GnirehtetX"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables {
+            useSupportLibrary true
+        }
+    }
+
+    signingConfigs {
+        file {
+            storeFile file("output.jks")
+            storePassword findProperty("keystore-store-password")
+            keyAlias findProperty("keystore-key-alias")
+            keyPassword findProperty("keystore-key-password")
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            debuggable false
+            signingConfig signingConfigs.file
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+
+        debug {
+            minifyEnabled false
+            shrinkResources false
+            debuggable true
+            resValue "string", "app_name", "GnirehtetX Debug"
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    buildFeatures {
+        compose true
+        buildConfig true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.4.7'
+    }
+
+    packagingOptions {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
+    }
+
+    applicationVariants.all { variant ->
+        variant.mergeResources.doLast {
+            copy {
+                from (["../LICENSE", "../CHANGELOG.md"])
+                into ("src/main/res/raw")
+                rename { String fileName ->
+                    fileName.toLowerCase()
+                }
+            }
+        }
+    }
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    implementation 'androidx.core:core-ktx:1.10.1'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.1'
+    implementation 'androidx.activity:activity-compose:1.7.1'
+    implementation "androidx.compose.ui:ui:$compose_version"
+    implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
+    implementation 'androidx.compose.material3:material3:1.2.0-alpha01'
+    implementation "androidx.compose.material:material-icons-extended:$compose_version"
+    implementation 'androidx.navigation:navigation-compose:2.6.0-rc01'
+    implementation 'io.coil-kt:coil-compose:2.3.0'
+    implementation 'me.omico.lux:lux-androidx-compose-material3-pullrefresh'
+    implementation "com.halilibo.compose-richtext:richtext-commonmark:$richtext_version"
+    implementation "com.halilibo.compose-richtext:richtext-ui-material:$richtext_version"
+    implementation "com.mikepenz:aboutlibraries-compose:$aboutlibs_version"
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
+    debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
+    debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
+}
+
+aboutLibraries {
+    configPath = "config"
+    fetchRemoteLicense = true
+    duplicationMode = com.mikepenz.aboutlibraries.plugin.DuplicateMode.MERGE
+}
