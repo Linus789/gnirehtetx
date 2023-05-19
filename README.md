@@ -5,7 +5,7 @@ Basically the stock [Gnirehtet](https://github.com/Genymobile/gnirehtet) app wit
 * set custom DNS servers
 * stop Gnirehtet on disconnect
 
-## Release build
+## Build in release mode
 1. Put your keystore `output.jks` in the `app/` folder.
 2. Put the properties `keystore-store-password`, `keystore-key-alias`, and `keystore-key-password` in the gradle.properties file.
 
