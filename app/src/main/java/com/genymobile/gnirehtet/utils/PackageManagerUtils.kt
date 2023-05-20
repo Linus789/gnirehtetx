@@ -41,6 +41,12 @@ fun PackageManager.getAppIcon(activityManager: ActivityManager, applicationInfo:
         }
     }
 
+    return null
+}
+
+fun PackageManager.getDefaultAppIcon(activityManager: ActivityManager): Drawable? {
+    val iconDpi = activityManager.launcherLargeIconDensity
+
     return runCatching {
         Resources.getSystem().getDrawableForDensity(android.R.mipmap.sym_def_app_icon, iconDpi, null)
     }.getOrNull()
