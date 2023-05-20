@@ -20,7 +20,7 @@ import com.halilibo.richtext.ui.RichTextThemeIntegration
 fun AboutChangelogView(navController: NavHostController, navBackStackEntry: NavBackStackEntry) {
     val context = LocalContext.current
 
-    BaseSettingsView(title = "License", navController = navController) {
+    BaseSettingsView(title = "Changelog", navController = navController) {
         SelectionContainer {
             RichTextThemeIntegration(contentColor = { MaterialTheme.colorScheme.onBackground }) {
                 RichText(modifier = Modifier.padding(16.dp)) {
