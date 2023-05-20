@@ -41,9 +41,9 @@ fun SettingsView(navController: NavHostController, navBackStackEntry: NavBackSta
             item {
                 val description = remember {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        "Dark theme, dynamic color"
+                        "Light theme, dark theme, dynamic color"
                     } else {
-                        "Dark theme"
+                        "Light theme, dark theme"
                     }
                 }
 
