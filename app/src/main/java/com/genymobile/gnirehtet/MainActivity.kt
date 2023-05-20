@@ -10,6 +10,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -25,8 +26,8 @@ class MainActivity : ComponentActivity() {
         ContextUtils.initialize(this)
 
         setContent {
-            val theme by Preferences.theme.stateFlow.collectAsState()
-            val dynamicColor by Preferences.dynamicColor.stateFlow.collectAsState()
+            val theme by Preferences.theme.stateFlow.collectAsStateWithLifecycle()
+            val dynamicColor by Preferences.dynamicColor.stateFlow.collectAsStateWithLifecycle()
 
             GnirehtetXTheme(
                 theme = theme,
