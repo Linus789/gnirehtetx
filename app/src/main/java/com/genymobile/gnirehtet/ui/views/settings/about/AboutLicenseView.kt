@@ -14,14 +14,14 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import com.genymobile.gnirehtet.R
 import com.genymobile.gnirehtet.ui.views.settings.BaseSettingsView
-import com.genymobile.gnirehtet.ui.views.utils.LockScreenOrientation
+import com.genymobile.gnirehtet.utils.getActivity
 import com.genymobile.gnirehtet.utils.getRawTextFile
 
 @Composable
 fun AboutLicenseView(navController: NavHostController, navBackStackEntry: NavBackStackEntry) {
     val context = LocalContext.current
 
-    LockScreenOrientation(orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
+    context.getActivity()?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
     BaseSettingsView(title = "License", navController = navController) {
         SelectionContainer {
