@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
-import android.graphics.drawable.Drawable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -51,8 +50,12 @@ import com.genymobile.gnirehtet.utils.getAppIcon
 import com.genymobile.gnirehtet.utils.getInstalledPackagesCompat
 import com.genymobile.gnirehtet.utils.versionCodeCompat
 import coil.compose.AsyncImage
+import coil.imageLoader
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.genymobile.gnirehtet.domain.Gnirehtet
 import com.genymobile.gnirehtet.settings.Preferences
+import com.genymobile.gnirehtet.utils.getDefaultAppIcon
 import kotlinx.coroutines.*
 
 private class InstalledApp(
@@ -146,6 +149,7 @@ fun MainView(navController: NavHostController, navBackStackEntry: NavBackStackEn
         fun refresh() = refreshScope.launch {
             refreshing = true
             withContext(Dispatchers.Default) {
+                context.imageLoader.memoryCache?.clear()
                 installedAppsState.value = LoadStatus.Data(loadInstalledAppsBlocking())
             }
             refreshing = false
@@ -164,6 +168,8 @@ fun MainView(navController: NavHostController, navBackStackEntry: NavBackStackEn
                 )
         ) {
             LoadData(loadStatus = installedAppsState.value) { installedApps ->
+                val defaultIcon = remember { packageManager.getDefaultAppIcon(activityManager) }
+
                 LazyColumn(
                     modifier = Modifier.fillMaxWidth(),
                     contentPadding = PaddingValues(start = 10.dp, end = 10.dp, top = 0.dp, bottom = 10.dp),
@@ -220,7 +226,12 @@ fun MainView(navController: NavHostController, navBackStackEntry: NavBackStackEn
                                         .weight(1f)
                                 ) {
                                     AsyncImage(
-                                        model = packageManager.getAppIcon(activityManager, installedApp.packageInfo.applicationInfo),
+                                        model = ImageRequest.Builder(context)
+                                            .data(packageManager.getAppIcon(activityManager, installedApp.packageInfo.applicationInfo))
+                                            .fallback(defaultIcon)
+                                            .memoryCachePolicy(CachePolicy.ENABLED)
+                                            .memoryCacheKey(installedApp.packageInfo.packageName)
+                                            .build(),
                                         contentDescription = installedApp.displayName,
                                         modifier = Modifier.size(50.dp)
                                     )
