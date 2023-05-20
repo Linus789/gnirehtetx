@@ -1,5 +1,6 @@
 package com.genymobile.gnirehtet.ui.views.settings.about
 
+import android.content.pm.ActivityInfo
 import android.os.Build
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -20,6 +21,7 @@ import com.genymobile.gnirehtet.ui.views.Views
 import com.genymobile.gnirehtet.ui.views.settings.BaseSettingsView
 import com.genymobile.gnirehtet.ui.views.settings.SettingItem
 import com.genymobile.gnirehtet.ui.views.utils.navigate
+import com.genymobile.gnirehtet.utils.getActivity
 import com.genymobile.gnirehtet.utils.toast
 
 @Composable
@@ -27,6 +29,8 @@ fun AboutSettingsView(navController: NavHostController, navBackStackEntry: NavBa
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
     val uriHandler = LocalUriHandler.current
+
+    context.getActivity()?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
 
     BaseSettingsView(title = "About", navController = navController) {
         LazyColumn {
