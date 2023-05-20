@@ -2,6 +2,7 @@ buildscript {
     ext {
         kotlin_version = '1.8.21'
         compose_version = '1.4.3'
+        lifecycle_version = '2.6.1'
         richtext_version = '0.16.0'
         aboutlibs_version = '10.6.3'
     }

@@ -18,6 +18,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import com.genymobile.gnirehtet.domain.Gnirehtet
@@ -65,7 +66,7 @@ fun GeneralSettingsView(navController: NavHostController, navBackStackEntry: Nav
 @Composable
 private fun DnsServersSettings() {
     val context = LocalContext.current
-    val dnsServers by Preferences.getGnirehtetDnsServers().collectAsState()
+    val dnsServers by Preferences.getGnirehtetDnsServers().collectAsStateWithLifecycle()
     var showDialog by rememberSaveable { mutableStateOf(false) }
     val restartGnirehtetCoroutineScope = rememberCoroutineScope()
 
@@ -162,7 +163,7 @@ private fun DnsServersSettings() {
 @Composable
 private fun StopOnDisconnectSettings() {
     val context = LocalContext.current
-    val stopOnDisconnect by Preferences.shouldStopOnDisconnect().collectAsState()
+    val stopOnDisconnect by Preferences.shouldStopOnDisconnect().collectAsStateWithLifecycle()
 
     PreferenceSwitch(
         title = "Stop on disconnect",
@@ -177,7 +178,7 @@ private fun StopOnDisconnectSettings() {
 
 @Composable
 private fun ShowToastOnConnectSettings() {
-    val showToastOnConnect by Preferences.gnirehtetShowToastOnConnect.stateFlow.collectAsState()
+    val showToastOnConnect by Preferences.gnirehtetShowToastOnConnect.stateFlow.collectAsStateWithLifecycle()
 
     PreferenceSwitch(
         title = "Show toast on connect",
@@ -192,7 +193,7 @@ private fun ShowToastOnConnectSettings() {
 
 @Composable
 private fun ShowToastOnDisconnectSettings() {
-    val showToastOnDisconnect by Preferences.gnirehtetShowToastOnDisconnect.stateFlow.collectAsState()
+    val showToastOnDisconnect by Preferences.gnirehtetShowToastOnDisconnect.stateFlow.collectAsStateWithLifecycle()
 
     PreferenceSwitch(
         title = "Show toast on disconnect",

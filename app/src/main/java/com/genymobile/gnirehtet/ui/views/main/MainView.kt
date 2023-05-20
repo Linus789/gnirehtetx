@@ -38,6 +38,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import com.genymobile.gnirehtet.domain.BlockedApps
@@ -109,9 +110,9 @@ fun MainView(navController: NavHostController, navBackStackEntry: NavBackStackEn
     val packageManager = ContextUtils.PackageManager
     val activityManager = ContextUtils.ActivityManager
     val restartGnirehtetCoroutineScope = rememberCoroutineScope()
-    val gnirehtetIsRunning by Gnirehtet.isRunning().collectAsState()
-    val gnirehtetIsConnected by Gnirehtet.isConnected().collectAsState()
-    val shouldStopOnDisconnect by Preferences.shouldStopOnDisconnect().collectAsState()
+    val gnirehtetIsRunning by Gnirehtet.isRunning().collectAsStateWithLifecycle()
+    val gnirehtetIsConnected by Gnirehtet.isConnected().collectAsStateWithLifecycle()
+    val shouldStopOnDisconnect by Preferences.shouldStopOnDisconnect().collectAsStateWithLifecycle()
     val gnirehtetEnabled by remember {
         derivedStateOf {
             if (!gnirehtetIsConnected && shouldStopOnDisconnect) {

@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import com.genymobile.gnirehtet.settings.Preferences
@@ -35,7 +36,7 @@ fun AppearanceSettingsView(navController: NavHostController, navBackStackEntry: 
 
 @Composable
 private fun ThemeSettings() {
-    val theme by Preferences.theme.stateFlow.collectAsState()
+    val theme by Preferences.theme.stateFlow.collectAsStateWithLifecycle()
     var showDialog by rememberSaveable { mutableStateOf(false) }
 
     SettingItem(
@@ -78,7 +79,7 @@ private fun ThemeSettings() {
 
 @Composable
 private fun DynamicColorSettings() {
-    val dynamicColor by Preferences.dynamicColor.stateFlow.collectAsState()
+    val dynamicColor by Preferences.dynamicColor.stateFlow.collectAsStateWithLifecycle()
 
     PreferenceSwitch(
         title = "Dynamic color",

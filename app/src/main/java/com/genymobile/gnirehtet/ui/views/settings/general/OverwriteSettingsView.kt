@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import com.genymobile.gnirehtet.domain.Gnirehtet
@@ -63,7 +64,7 @@ fun OverwriteSettingsView(navController: NavHostController, navBackStackEntry: N
 private fun OverwriteDnsServersSettings() {
     val context = LocalContext.current
     val restartGnirehtetCoroutineScope = rememberCoroutineScope()
-    val overwriteDnsServers by Preferences.isOverwriteDnsServers().collectAsState()
+    val overwriteDnsServers by Preferences.isOverwriteDnsServers().collectAsStateWithLifecycle()
 
     PreferenceSwitch(
         title = "Overwrite DNS servers",
@@ -80,7 +81,7 @@ private fun OverwriteDnsServersSettings() {
 @Composable
 private fun OverwriteStopOnDisconnectSettings() {
     val restartGnirehtetCoroutineScope = rememberCoroutineScope()
-    val overwriteStopOnDisconnect by Preferences.isOverwriteStopOnDisconnect().collectAsState()
+    val overwriteStopOnDisconnect by Preferences.isOverwriteStopOnDisconnect().collectAsStateWithLifecycle()
 
     PreferenceSwitch(
         title = "Overwrite stop on disconnect",
@@ -98,7 +99,7 @@ private fun OverwriteStopOnDisconnectSettings() {
 private fun OverwriteBlockedAppsSettings() {
     val context = LocalContext.current
     val restartGnirehtetCoroutineScope = rememberCoroutineScope()
-    val overwriteBlockedApps by Preferences.isOverwriteBlockedApps().collectAsState()
+    val overwriteBlockedApps by Preferences.isOverwriteBlockedApps().collectAsStateWithLifecycle()
 
     PreferenceSwitch(
         title = "Overwrite blocked apps",
