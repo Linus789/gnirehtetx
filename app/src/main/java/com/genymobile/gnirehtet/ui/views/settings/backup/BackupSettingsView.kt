@@ -24,7 +24,7 @@ private const val JSON_MIME_TYPE = "application/json"
 
 @Composable
 fun BackupSettingsView(navController: NavHostController, navBackStackEntry: NavBackStackEntry) {
-    BaseSettingsView(title = "Appearance", navController = navController) {
+    BaseSettingsView(title = "Backup", navController = navController) {
         LazyColumn {
             item {
                 ImportSettings()
