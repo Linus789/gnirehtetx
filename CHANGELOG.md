@@ -1,3 +1,7 @@
+### 0.1.3 (2023-07-14)
+
+* now compatible with Gnirehtet 2.5.1
+
 ### 0.1.2 (2023-05-21)
 
 * Update changelog
